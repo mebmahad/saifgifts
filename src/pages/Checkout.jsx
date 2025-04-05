@@ -382,13 +382,9 @@ function Checkout() {
                     <li key={item.id} className="py-4 flex">
                       <div className="flex-shrink-0 w-16 h-16 border border-gray-200 rounded-md overflow-hidden">
                         <img
-                          src={item.image}
+                          src={item.image || item.images}
                           alt={item.name}
                           className="w-full h-full object-center object-cover"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "https://via.placeholder.com/150?text=Product";
-                          }}
                         />
                       </div>
                       <div className="ml-4 flex-1">

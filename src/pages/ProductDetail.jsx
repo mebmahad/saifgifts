@@ -6,7 +6,7 @@ import service from '../appwrite/config'
 import Container from '../components/Container'
 
 function ProductDetail() {
-  const { productId } = useParams()
+  const { id } = useParams()
   const navigate = useNavigate()
   const dispatch = useDispatch()
   
@@ -14,11 +14,12 @@ function ProductDetail() {
   const [quantity, setQuantity] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [selectedImage, setSelectedImage] = useState(0)
   
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const productData = await service.getProduct(productId)
+        const productData = await service.getProduct(id)
         if (productData) {
           setProduct(productData)
         } else {
@@ -33,7 +34,7 @@ function ProductDetail() {
     }
     
     fetchProduct()
-  }, [productId])
+  }, [id])
   
   const handleQuantityChange = (value) => {
     if (value < 1) return
@@ -87,19 +88,48 @@ function ProductDetail() {
         <div className="flex flex-col md:flex-row gap-8">
           {/* Product Image */}
           <div className="md:w-1/2">
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <img 
-                src={product.featuredimage} 
-                alt={product.name} 
-                className="w-full h-auto object-cover"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "https://via.placeholder.com/600x400?text=Product+Image";
-                }}
-              />
+            <div className="bg-white rounded-lg shadow-md overflow-hidden mb-4">
+              {product.featuredimage ? (
+                <img 
+                  src={service.getFilePreview(product.featuredimage)}
+                  alt={product.name} 
+                  className="w-full h-auto object-cover"
+                />
+              ) : product.images && product.images.length > 0 ? (
+                <img
+                  src={service.getMultipleFilesPreviews(product.images)[selectedImage]}
+                  alt={`${product.name} - Image ${selectedImage + 1}`}
+                  className="w-full h-auto object-cover"
+                />
+              ) : (
+                <div className="w-full h-96 bg-gray-100 flex items-center justify-center">
+                  <span className="text-gray-400">No image available</span>
+                </div>
+              )}
             </div>
+
+            {/* Thumbnail Gallery */}
+            {product.images && product.images.length > 1 && (
+              <div className="grid grid-cols-5 gap-2">
+                {product.images.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImage(index)}
+                    className={`relative rounded-lg overflow-hidden border-2 ${
+                      selectedImage === index ? 'border-purple-500' : 'border-transparent'
+                    }`}
+                  >
+                    <img
+                      src={service.getMultipleFilesPreviews(product.images)[index]}
+                      alt={`${product.name} - Thumbnail ${index + 1}`}
+                      className="w-full h-20 object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          
+
           {/* Product Details */}
           <div className="md:w-1/2">
             <div className="bg-white rounded-lg shadow-md p-6">
